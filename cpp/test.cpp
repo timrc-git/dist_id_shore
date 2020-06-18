@@ -135,19 +135,19 @@ int main(int argc, char* argv[]) {
       TEST_CONDITION(id1 < id2);
 
     TEST_BANNER("Invalid ID fields");
-      TEST_THROW(node.FieldsToId(1, 1, 1024));
-      TEST_THROW(node.FieldsToId(1, 1024, 1));
+      TEST_THROW(node.FieldsToId(1, 1, MAX_NODES));
+      TEST_THROW(node.FieldsToId(1, MAX_COUNTER, 1));
 
     TEST_BANNER("ID field boundary conditions (node)");
-      id1 = node.FieldsToId(1234567, 123, 1022);
-      id2 = node.FieldsToId(1234567, 123, 1023);
+      id1 = node.FieldsToId(1234567, 123, MAX_NODES-2);
+      id2 = node.FieldsToId(1234567, 123, MAX_NODES-1);
       TEST_CONDITION(id1 < id2);
       id2 = node.FieldsToId(1234567, 123, 0);
       TEST_CONDITION(id1 > id2);
 
     TEST_BANNER("ID field boundary conditions (counter)");
-      id1 = node.FieldsToId(1234567, 1022, 123);
-      id2 = node.FieldsToId(1234567, 1023, 123);
+      id1 = node.FieldsToId(1234567, MAX_COUNTER-2, 123);
+      id2 = node.FieldsToId(1234567, MAX_COUNTER-1, 123);
       TEST_CONDITION(id1 < id2);
       id2 = node.FieldsToId(1234567, 0, 123);
       TEST_CONDITION(id1 > id2);
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
 
   TEST_BANNER("Single Node, normal functioning");
   {
-    unsigned idCount = 1000000;
+    unsigned idCount = MAX_NODES*MAX_COUNTER + 2;
     IdNode node1;
     uint16_t nodeId1 = 123;
     vector<IdNode*> nodes;

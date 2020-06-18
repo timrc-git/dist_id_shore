@@ -18,9 +18,12 @@
 #ifndef LISTEN_TIME
 #  define LISTEN_TIME 3000
 #endif
-#define MAX_NODES   1024
+#define NODE_BITS 10
+#define MAX_NODES   (1<<NODE_BITS)
+#define NODE_MASK ((1<<(NODE_BITS+1)) - 1)
 #define COUNTER_BITS 10
 #define MAX_COUNTER  (1<<COUNTER_BITS)
+#define COUNTER_MASK ((1<<(COUNTER_BITS+1)) - 1)
 
 // NOTE: port is hex for "id" :D
 //#define MULTICAST_ADDR "224.0.0.152:26980"
@@ -135,16 +138,16 @@ public:
     if (node >= MAX_NODES) { throw std::out_of_range("FieldsToId(): Invalid node id!"); }
     if (counter >= MAX_COUNTER) { throw std::out_of_range("FieldsToId(): Invalid counter value!"); }
     //assert( (node < MAX_NODES) && (counter < MAX_COUNTER) );
-    uint64_t id = (timestamp << 20) + (counter << 10) + node;
+    uint64_t id = (((timestamp << COUNTER_BITS) + counter) << NODE_BITS) + node;
     return id;
   }
 
   // Split out an ID to it's fields, This function is just for troubleshooting.
   static void IdToFields(uint64_t &timestamp, uint16_t &counter, uint16_t &node, uint64_t id) {
-    node = id & 0x3FF;
-    id = id >> 10;
-    counter = id & 0x3FF;
-    id = id >> 10;
+    node    = id &  NODE_MASK;
+    id      = id >> NODE_BITS;
+    counter = id &  COUNTER_MASK;
+    id      = id >> COUNTER_BITS;
     timestamp = id;
   }
 
@@ -379,7 +382,7 @@ public:
     }
     if (debug) { fprintf(stderr, "INFO: emitting MC update...\n"); }
     // emit multicast update
-    memcpy(&state.mode, "UP", 2);
+    state.SetMode("UP");
     EmitState(state);
     return true;
   }
